@@ -16,6 +16,8 @@ export const FRAGMENT = /* glsl */ `
   uniform sampler2D tFlow;  // cursor velocity trail from OGL's Flowmap
   uniform float uTime;
   uniform float uReveal;    // 0 -> 1 intro liquid reveal
+  uniform float uGrow;      // 0 = no scaling, 0.5 = starts at 50% size and grows to 100%
+  uniform vec2 uOrigin;     // point (in uv space) the layer grows from
 
   varying vec2 vUv;
 
@@ -54,18 +56,21 @@ export const FRAGMENT = /* glsl */ `
   }
 
   void main() {
-    vec2 uv = vUv;
-    vec3 flow = texture2D(tFlow, uv).rgb;
+    vec3 flow = texture2D(tFlow, vUv).rgb;
 
     // Slow ambient liquid wobble
     vec2 wobble = vec2(
-      fbm(uv * 3.0 + uTime * 0.12),
-      fbm(uv * 3.0 + 7.3 - uTime * 0.12)
+      fbm(vUv * 3.0 + uTime * 0.12),
+      fbm(vUv * 3.0 + 7.3 - uTime * 0.12)
     ) - 0.5;
 
     // Liquid reveal mask: noise-edged wipe, bottom -> top
-    float n = fbm(uv * 3.5 + flow.xy * 1.5);
-    float reveal = smoothstep(0.0, 0.18, uReveal * 1.7 - n * 0.9 - uv.y * 0.5);
+    float n = fbm(vUv * 3.5 + flow.xy * 1.5);
+    float reveal = smoothstep(0.0, 0.18, uReveal * 1.7 - n * 0.9 - vUv.y * 0.5);
+
+    // Grow-in: scale the layer around uOrigin while it reveals
+    float scale = mix(1.0 - uGrow, 1.0, uReveal);
+    vec2 uv = (vUv - uOrigin) / scale + uOrigin;
 
     // Distortion is stronger while the layer is still "liquid"
     float strength = 1.0 + (1.0 - uReveal) * 2.0;

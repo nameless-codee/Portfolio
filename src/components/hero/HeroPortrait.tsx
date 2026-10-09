@@ -11,7 +11,7 @@ export function HeroPortrait() {
         draggable={false}
         initial={{ opacity: 0, y: 80 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1, delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
         className="h-full w-auto max-w-none select-none object-contain object-bottom"
       />
     </div>

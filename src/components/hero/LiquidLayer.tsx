@@ -18,6 +18,12 @@ type LiquidLayerProps = {
   revealDelay?: number
   /** Plain CSS background used if WebGL isn't available. */
   fallback?: string
+  /** Seconds the reveal takes. */
+  duration?: number
+  /** 0 = no scaling. 0.5 = the layer starts at 50% size and grows to 100% while revealing. */
+  grow?: number
+  /** Grow-in origin in uv space (0..1, y up). Must be a stable reference (define it at module level). */
+  origin?: (width: number, height: number) => [number, number]
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -27,7 +33,15 @@ const MAX_DPR = 2
  * Fills its parent ("the card"), paints `draw()` into a 2D canvas, uploads it as a
  * texture and distorts it with a cursor-driven flowmap. Pointer events pass through.
  */
-export function LiquidLayer({ draw, className, revealDelay = 0.2, fallback }: LiquidLayerProps) {
+export function LiquidLayer({
+  draw,
+  className,
+  revealDelay = 0.2,
+  fallback,
+  duration = 1.8,
+  grow = 0,
+  origin,
+}: LiquidLayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -73,6 +87,8 @@ export function LiquidLayer({ draw, className, revealDelay = 0.2, fallback }: Li
         tFlow: flowmap.uniform,
         uTime: { value: 0 },
         uReveal: { value: 0 },
+        uGrow: { value: grow },
+        uOrigin: { value: [0.5, 0.5] },
       },
     })
     const mesh = new Mesh(gl, { geometry: new Triangle(gl), program })
@@ -109,7 +125,7 @@ export function LiquidLayer({ draw, className, revealDelay = 0.2, fallback }: Li
           program.uniforms.uReveal.value = 1
         } else {
           introAnim = animate(0, 1, {
-            duration: 1.8,
+            duration,
             delay: revealDelay,
             ease: EASE,
             onUpdate: (v) => (program.uniforms.uReveal.value = v),
@@ -128,6 +144,7 @@ export function LiquidLayer({ draw, className, revealDelay = 0.2, fallback }: Li
       gl.canvas.style.width = "100%"
       gl.canvas.style.height = "100%"
       flowmap.aspect = width / height
+      if (origin) program.uniforms.uOrigin.value = origin(width, height)
 
       window.clearTimeout(resizeTimer)
       resizeTimer = window.setTimeout(redraw, firstResize ? 0 : 150)
@@ -197,7 +214,7 @@ export function LiquidLayer({ draw, className, revealDelay = 0.2, fallback }: Li
       gl.canvas.remove()
       gl.getExtension("WEBGL_lose_context")?.loseContext()
     }
-  }, [draw, revealDelay, fallback])
+  }, [draw, revealDelay, fallback, duration, grow, origin])
 
   return <div ref={containerRef} aria-hidden className={`pointer-events-none ${className ?? ""}`} />
 }

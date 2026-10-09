@@ -12,7 +12,19 @@ async function loadFonts() {
   ])
 }
 
-/** Back layer: orange panel, dot grid and the cream circle. */
+/** Where the cream circle sits – shared by its drawing and its grow-in origin. */
+export function circleLayout(w: number, h: number) {
+  const diameter = Math.min(w * 0.8, h * 0.68)
+  return { cx: w / 2, cy: h * 0.05 + diameter / 2, r: diameter / 2 }
+}
+
+/** Grow-in origin in uv space (uv y points up, canvas y points down). */
+export const circleOrigin = (w: number, h: number): [number, number] => {
+  const { cx, cy } = circleLayout(w, h)
+  return [cx / w, 1 - cy / h]
+}
+
+/** Back layer: orange panel and dot grid. */
 export const drawBackground: DrawFn = (ctx, w, h) => {
   // Panel
   ctx.fillStyle = cssVar("--color-hero-orange", "#ff4500")
@@ -31,11 +43,14 @@ export const drawBackground: DrawFn = (ctx, w, h) => {
   }
   ctx.fill()
 
-  // Cream circle – same sizing rule the DOM version used
-  const diameter = Math.min(w * 0.8, h * 0.68)
+}
+
+/** Circle layer: just the cream circle, so it can animate on its own. */
+export const drawCircle: DrawFn = (ctx, w, h) => {
+  const { cx, cy, r } = circleLayout(w, h)
   ctx.fillStyle = cssVar("--color-hero-cream", "#faf1e0")
   ctx.beginPath()
-  ctx.arc(w / 2, h * 0.05 + diameter / 2, diameter / 2, 0, Math.PI * 2)
+  ctx.arc(cx, cy, r, 0, Math.PI * 2)
   ctx.fill()
 }
 
