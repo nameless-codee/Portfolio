@@ -54,11 +54,10 @@ export const drawCircle: DrawFn = (ctx, w, h) => {
   ctx.fill()
 }
 
-/** Front layer: the big name, nav labels and social icons (drawn over the portrait). */
-export const drawForeground: DrawFn = async (ctx, w, h, card) => {
-  await loadFonts() // measure the DOM only after fonts are in, so positions are final
+/** Front layer: just the big name, drawn over the portrait. Nav + socials are plain DOM. */
+export const drawForeground: DrawFn = async (ctx, w, h) => {
+  await loadFonts()
 
-  const origin = card.getBoundingClientRect()
   const dpr = ctx.getTransform().a
   ctx.fillStyle = "#fff"
 
@@ -79,38 +78,4 @@ export const drawForeground: DrawFn = async (ctx, w, h, card) => {
   ctx.fillText("MANIRENKAN", left, baseline)
   ctx.fillText("KESHAVAN", left + size * (a + gap), baseline)
   ctx.restore()
-
-  // ---- Nav labels: copy position + font from the invisible DOM links -------
-  card.querySelectorAll<HTMLElement>('[data-liquid="text"]').forEach((el) => {
-    const r = el.getBoundingClientRect()
-    const cs = getComputedStyle(el)
-    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
-    ctx.textBaseline = "middle"
-    ctx.fillText(
-      (el.textContent ?? "").toUpperCase(),
-      r.left - origin.left,
-      r.top - origin.top + r.height / 2
-    )
-  })
-
-  // ---- Social icons: rasterise the (invisible) DOM <svg>s -------------------
-  const icons = card.querySelectorAll<SVGSVGElement>('[data-liquid="icon"]')
-  await Promise.all(
-    Array.from(icons).map(async (svg) => {
-      const r = svg.getBoundingClientRect()
-      const clone = svg.cloneNode(true) as SVGSVGElement
-      clone.removeAttribute("class")
-      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg")
-      clone.setAttribute("width", String(r.width))
-      clone.setAttribute("height", String(r.height))
-      clone.setAttribute("style", "color:#fff")
-
-      const img = new Image()
-      img.src =
-        "data:image/svg+xml;charset=utf-8," +
-        encodeURIComponent(new XMLSerializer().serializeToString(clone))
-      await img.decode()
-      ctx.drawImage(img, r.left - origin.left, r.top - origin.top, r.width, r.height)
-    })
-  )
 }

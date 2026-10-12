@@ -16,19 +16,46 @@
 	font-display: swap;
 }
 
+@font-face {
+	font-family: "Road Rage";
+	src: url("./assets/fonts/RoadRage-Regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
 @theme {
 	--color-hero-orange: #ff4500;
 	--color-hero-cream: #faf1e0;
+	--color-paper: #faf1e0;
 
 	/* Gives you the font-magnu and font-higher utilities */
 	--font-magnu: "GC Magnu Demo", "Anton", "Impact", sans-serif;
 	--font-higher: "Higher", "Bebas Neue", sans-serif;
+	--font-roadrage: "Road Rage", "Permanent Marker", cursive;
+}
+
+/* Hide the native cursor only while the custom one is active */
+@media (hover: hover) and (pointer: fine) {
+	html.has-custom-cursor,
+	html.has-custom-cursor * {
+		cursor: none !important;
+	}
+
+	/* Keep the real caret/cursor for text entry */
+	html.has-custom-cursor input,
+	html.has-custom-cursor textarea,
+	html.has-custom-cursor select,
+	html.has-custom-cursor [contenteditable="true"] {
+		cursor: auto !important;
+	}
 }
 
 html,
 body,
 #root {
 	height: 100%;
+	scroll-behavior: smooth;
 }
 
 body {
@@ -49,4 +76,15 @@ body {
 	);
 	background-size: 18px 18px;
 	background-position: 8px 8px; /* offsets the grid like your mockup */
+}
+
+/* Dot grid over orange (same as the hero) */
+.dots-orange {
+	background-image: radial-gradient(
+		circle at center,
+		rgb(255 255 255 / 0.28) 1px,
+		transparent 1.5px
+	);
+	background-size: 18px 18px;
+	background-position: -1px -1px;
 }
