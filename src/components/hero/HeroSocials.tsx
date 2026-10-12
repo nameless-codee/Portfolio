@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { SOCIALS } from "@/data/hero"
+import { RollingIcon } from "./RollingIcon"
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -20,7 +21,7 @@ export function HeroSocials() {
         variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 1.2 } } }}
         className="absolute right-3 top-5 z-30 flex flex-col gap-1 md:right-6 md:top-7"
       >
-        {SOCIALS.map(({ label, href, icon: Icon }) => (
+        {SOCIALS.map(({ label, href, icon }) => (
           <motion.li
             key={label}
             variants={{
@@ -36,9 +37,7 @@ export function HeroSocials() {
                   size="icon"
                   className="size-10 rounded-md text-white hover:bg-transparent hover:text-white focus-visible:ring-white/70 md:size-12"
                 >
-                  <a href={href} target="_blank" rel="noreferrer" aria-label={label}>
-                    <Icon className="size-6 md:size-7" />
-                  </a>
+                  <RollingIcon icon={icon} href={href} target="_blank" rel="noreferrer" aria-label={label} />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">{label}</TooltipContent>
